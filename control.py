@@ -1,3 +1,8 @@
+import string
+lower_case = string.ascii_lowercase
+upper_case = string.ascii_uppercase
+
+
 #stack data structure
 class Stack():
     def __init__(self):
@@ -23,10 +28,13 @@ class LL1_parser_codegenerator():
     def __init__(self, grammer, input_str):
         self.grammer = grammer
         self.input_str = input_str
+        self.processed_input = Stack()
+        self.LL1_stack = Stack()
         self.temp_startaddress = 600
         self.variable_startaddress = 400
         self.ss = Stack()
         self.variable_adresses = {}
+        self.terminals = ''
         self.PB = []
         self.i = 0   
      
@@ -37,21 +45,32 @@ class LL1_parser_codegenerator():
         return temp_address
 
     #generate a code for each variable
-    def generate_address(self, variable):
-        address = self.variable_startaddress
-        self.variable_startaddress += 1
-        self.variable_adresses[variable] = address
+    def terminal_string_generator(self):
+        self.processed_input.push('$')
+        for character in self.input_str:
+            if character in lower_case:
+                self.terminals += character
+                self.processed_input.push('id')
+            else:
+                self.processed_input.push(character)
+
+    def match(self):
+        self.LL1_stack.pop()
+        self.processed_input.pop()
 
     # returns the address of the given variable
     def find_address(self, variable):
         return self.variable_adresses[variable]
 
-    def pid(self, id):
-        address = self.findaddress(id)
+    def pid(self):
+        terminal = self.terminals[0]
+        self.terminals = self.terminals[1:]
+        address = self.findaddress(terminal)
         self.ss.push(address)
 
     def assign(self):
         self.PB.append('(= ,' + str(self.ss.top()) + ',' + '    ' + ',' + str(self.ss.top(-1)) + ')')
+        self.ss.pop(2)
 
     def add(self):
         t = self.get_temp()
@@ -79,11 +98,41 @@ class LL1_parser_codegenerator():
 
     # def jmp_jmpf(self):
 
-    # #This function LL1Parse the input
-    # def parse(self):
+    #This function LL1Parse the input
+    def parse(self):
+        self.LL1_stack.push('$')
+        self.LL1_stack.push('S')
 
-    # #This function generates three address code
-    # def generate(self):
+        while self.processed_input != []:
+            if self.LL1_stack.top() == self.processed_input.top():
+                self.match()
+
+            elif self.LL1.stack.top() == '@pid':
+                self.pid()
+
+            elif self.LL1.stack.top() == '@assign':
+                self.assign()
+
+            elif self.LL1.stack.top() == '@add':
+                self.add()
+                
+            elif self.LL1.stack.top() == '@mult':
+                self.mult()
+
+            elif self.LL1.stack.top() == '@pid':
+                self.pid()
+
+            elif self.LL1.stack.top() in upper_case:
+                key = self.LL1.stack.top()
+                self.LL1.stack.pop()
+                for i in self.grammer[key][self.processed_input.top()][-1]:
+                    self.LL1_stack.push(i)
+
+    #This function generates three address code
+    def generate(self):
+        self.parse()
+        for i in self.PB:
+            print(i)
 
 
 #The purpose of this class is to get grammer and input then toggle the LL1_parser_codegenerator class
@@ -92,26 +141,25 @@ class Activate():
         self.grammer_dic = {}
         self.input_str = ''
 
-
     def grammer(self):
         grammer_file_address = input('Please enter your grammer file address: ')
         with open(grammer_file_address, 'r') as grammer_file:
-            grammer_file.read()
-            grammer_dic = eval(grammer_file)
+            grammer_read = grammer_file.read()
+            grammer_dic = eval(grammer_read)
             self.grammer_dic = grammer_dic
 
-    def input_str(self):
+    def input_string(self):
         input_file_address = input('Please enter your input file address: ')
         with open(input_file_address, 'r') as input_file:
-            input_string = input_file.read() + '$'
+            input_string = input_file.read()
             self.input_str = input_string
 
     def LL1_parse(self):
-        parse_code_object = LL1_parser_codegenerator()
+        parse_code_object = LL1_parser_codegenerator(self.grammer_dic, self.input_str)
         parse_code_object.parse()
 
     def code_generate(self):
-        parse_code_object = LL1_parser_codegenerator()
+        parse_code_object = LL1_parser_codegenerator(self.grammer_dic, self.input_str)
         parse_code_object.generate()
 
 
@@ -130,7 +178,7 @@ def menu():
         elif choice == '1':
             activator.grammer()
         elif choice == '2':
-            activator.input_str()
+            activator.input_string()
         elif choice == '3':
             activator.LL1_parse()
         elif activator == '4':

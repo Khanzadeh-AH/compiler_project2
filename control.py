@@ -25,7 +25,7 @@ class LL1_parser_codegenerator():
         self.temp_startaddress += 1
         return temp_address
 
-    #generate a code for each variable
+    #processes the input and changes terminals into "id"
     def terminal_string_generator(self):
         temp_processed_input = self.input_str.split()
         for i in temp_processed_input:
@@ -61,6 +61,7 @@ class LL1_parser_codegenerator():
         self.ss.pop(-1)
         self.ss.pop(-1)
         self.LL1_stack.pop(0)
+        self.i += 1
 
     def add(self):
         t = self.get_temp()
@@ -80,17 +81,44 @@ class LL1_parser_codegenerator():
         self.ss.append(t)
         self.i += 1
 
-    # def label(self):
+    def label(self):
+        self.ss.append(self.i)
 
-    # def save(slef):
 
-    # def jmpf(self):
+    def save(self):
+        self.ss.append(self.i)
+        self.i += 1
 
-    # def jmpt(self):
 
-    # def jmp_save(self):
+    def jmpf(self):
+        self.PB[self.ss[-1]] = '(jmpf ,' + str(self.ss[-2]) + ',' + '   ' + ',' + str(self.i) + ')'
+        self.ss.pop(-1)
+        self.ss.pop(-1)
 
-    # def jmp_jmpf(self):
+
+    def jmpt(self):
+        self.PB[self.i] = '(jmpt ,' + str(self.ss[-1]) + ',' + '   ' + ',' + str(self.ss[-2]) + ')'
+        self.i += 1
+        self.ss.pop(-1)
+        self.ss.pop(-1)
+
+    def jmp_save(self):
+        self.PB[self.ss[-1]] = '(jmpf ,' + str(self.ss[-2]) + ',' + '   ' + ',' + str((self.i)+1) + ')'
+        self.ss.pop(-1)
+        self.ss.pop(-1)
+        self.ss.append(self.i)
+        self.i += 1
+
+
+    def jmp_jmpf(self):
+        self.PB[self.i] = '(jmp ,' + '   ' + ',' + '   ' + ',' + str(self.ss[-3]) + ')'
+        self.i += 1
+        self.PB[self.ss[-1]] = '(jmpf ,' + str(self.ss[-2]) + ',' + '   ' + ',' + str(self.i) +')'
+        self.ss.pop(-1)
+        self.ss.pop(-1)
+        self.ss.pop(-1)
+
+
 
     #This function LL1Parse the input
     def parse(self):

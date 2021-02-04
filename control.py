@@ -1,4 +1,5 @@
 import string
+import os
 #sets of lowercasr and uppercase letters
 lower_case = string.ascii_lowercase
 upper_case = string.ascii_uppercase
@@ -33,6 +34,7 @@ class LL1_parser_codegenerator():
         for i in temp_processed_input:
             if i in self.allowed_ligicaloperators:
                 self.logical_operators.append(i)
+                self.processed_input.append('(co)')
             elif i in lower_case:
                 self.terminals += i
                 self.processed_input.append('id')
@@ -87,27 +89,33 @@ class LL1_parser_codegenerator():
 
     def label(self):
         self.ss.append(self.i)
+        self.LL1_stack.pop(0)
 
 
     def save(self):
         self.ss.append(self.i)
+        self.LL1_stack.pop(0)
+        self.PB.append('')
         self.i += 1
 
 
     def jmpf(self):
         self.PB[self.ss[-1]] = '(jmpf ,' + str(self.ss[-2]) + ',' + '   ' + ',' + str(self.i) + ')'
+        self.LL1_stack.pop(0)
         self.ss.pop(-1)
         self.ss.pop(-1)
 
 
     def jmpt(self):
         self.PB[self.i] = '(jmpt ,' + str(self.ss[-1]) + ',' + '   ' + ',' + str(self.ss[-2]) + ')'
+        self.LL1_stack.pop(0)
         self.i += 1
         self.ss.pop(-1)
         self.ss.pop(-1)
 
     def jmp_save(self):
         self.PB[self.ss[-1]] = '(jmpf ,' + str(self.ss[-2]) + ',' + '   ' + ',' + str((self.i)+1) + ')'
+        self.LL1_stack.pop(0)
         self.ss.pop(-1)
         self.ss.pop(-1)
         self.ss.append(self.i)
@@ -115,9 +123,10 @@ class LL1_parser_codegenerator():
 
 
     def jmp_jmpf(self):
-        self.PB[self.i] = '(jmp ,' + '   ' + ',' + '   ' + ',' + str(self.ss[-3]) + ')'
+        self.PB.append('(jmp ,' + '   ' + ',' + '   ' + ',' + str(self.ss[-3]) + ')')
         self.i += 1
         self.PB[self.ss[-1]] = '(jmpf ,' + str(self.ss[-2]) + ',' + '   ' + ',' + str(self.i) +')'
+        self.LL1_stack.pop(0)
         self.ss.pop(-1)
         self.ss.pop(-1)
         self.ss.pop(-1)
@@ -125,10 +134,10 @@ class LL1_parser_codegenerator():
     #this function generates code for logical calculations
     def BE(self):
         t = self.get_temp()
-        self.PB.append(str(self.logical_operators[0]) +',' + str(self.ss[-2]) + ',' + str(self.ss[-1]) + ',' + str(t) + ')')
+        self.PB.append('(' +str(self.logical_operators[0]) +' ,' + str(self.ss[-2]) + ',' + str(self.ss[-1]) + ',' + str(t) + ')')
         self.ss.pop(-1)
         self.ss.pop(-1)
-        self.logical_operators(0)
+        self.logical_operators.pop(0)
         self.LL1_stack.pop(0)
         self.ss.append(t)
         self.i += 1
@@ -136,7 +145,7 @@ class LL1_parser_codegenerator():
 
     #This function LL1Parse the input and generates 3 address code and also prints them
     def parse(self):
-        self.LL1_stack.append('S')
+        self.LL1_stack.append('A')
         self.LL1_stack.append('$')
 
         self.terminal_string_generator()
@@ -160,9 +169,9 @@ class LL1_parser_codegenerator():
                 self.jmpf()
             elif self.LL1_stack[0] == '@jmpt':
                 self.jmpt()
-            elif self.LL1_stack[0] == '@jmp_save':
+            elif self.LL1_stack[0] == '@jmp-save':
                 self.jmp_save()
-            elif self.LL1_stack[0] == '@jmp_jmpf':
+            elif self.LL1_stack[0] == '@jmp-jmpf':
                 self.jmp_jmpf()
             elif self.LL1_stack[0] == '@BE':
                 self.BE()
@@ -181,18 +190,23 @@ class LL1_parser_codegenerator():
                 for k in temp_list:
                     self.LL1_stack.append(k)
 
+            # elif self.processed_input[0] in self.allowed_ligicaloperators:
+
+
             else:
+                print(self.LL1_stack)
+                print(self.processed_input)
                 print("Error!")
-                break
+                #break
             
             #this prints the LL1 parse
             # print(self.LL1_stack, '\t', self.processed_input)
         #this prints the 3 address code
         for i in self.PB:
             print(i)
+        print('\n\n\n')
+
             
-
-
 
 #The purpose of this class is to get grammer and input then toggle the LL1_parser_codegenerator class
 class Activate():
@@ -228,7 +242,7 @@ def menu():
     activator = Activate()
 
     while True:
-        print("Choices: \n 1.Enter your grammer file address \n 2.Enter your input file address \n 3.LL1 parse \n 4.Generate three address code \n 0.Exit")
+        print("Choices: \n 1.Enter your grammer file address \n 2.Enter your input file address \n 3.LL1 parse \n 0.Exit")
         choice = input('Your choice: ')
 
         if choice == '0':
@@ -239,4 +253,6 @@ def menu():
         elif choice == '2':
             activator.input_string()
         elif choice == '3':
+            clear = lambda: os.system('cls')
+            clear()
             activator.LL1_parse()

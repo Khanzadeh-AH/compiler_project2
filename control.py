@@ -31,7 +31,11 @@ class LL1_parser_codegenerator():
 
     #processes the input and changes terminals into "id" and logical operators into "(co)". Also adds the logical_operators in to it's list
     def terminal_string_generator(self):
-        temp_processed_input = self.input_str.split()
+        self.input_str = self.input_str.replace(" " , "")
+        #split the input with this separators and put themselfs into the list
+        temp_processed_input = re.split('(\)|\(|\+|\:=|\*|\==|\!=|\>|\<|\<=|\>=|\&&|if|while|do)|\n|\t',self.input_str)
+        #filters the None elements from the lists
+        temp_processed_input = list(filter(None, temp_processed_input))
         for i in temp_processed_input:
             if i in self.allowed_ligicaloperators:
                 self.logical_operators.append(i)
@@ -190,7 +194,7 @@ class LL1_parser_codegenerator():
 
                 for k in temp_list:
                     self.LL1_stack.append(k)
-
+            #not needed
             # elif self.processed_input[0] in self.allowed_ligicaloperators:
 
 

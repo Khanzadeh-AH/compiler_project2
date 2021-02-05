@@ -29,7 +29,7 @@ class LL1_parser_codegenerator():
         self.temp_startaddress += 1
         return temp_address
 
-    #processes the input and changes terminals into "id". Also adds the logical_operators in to it's list
+    #processes the input and changes terminals into "id" and logical operators into "(co)". Also adds the logical_operators in to it's list
     def terminal_string_generator(self):
         temp_processed_input = self.input_str.split()
         for i in temp_processed_input:
@@ -251,7 +251,7 @@ def menu():
     activator.grammer('grammers/ekhtiyari.txt')
 
     while True:
-        print(" 1.Enter your grammer file address \n 2.Enter your input file address \n 3.LL1 parse \n 0.Exit")
+        print(" 1.Enter your grammer file address (optional) \n 2.Enter your input file address (mandatory) \n 3.LL1 parse \n 0.Exit")
         choice = input()
 
         if choice == '0':

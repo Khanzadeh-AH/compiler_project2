@@ -1,5 +1,6 @@
 import string
 import os
+import re
 #sets of lowercasr and uppercase letters
 lower_case = string.ascii_lowercase
 upper_case = string.ascii_uppercase
@@ -63,7 +64,7 @@ class LL1_parser_codegenerator():
         self.LL1_stack.pop(0)
 
     def assign(self):
-        self.PB.append('(= ,' + str(self.ss[-1]) + ',' + '   ' + ',' + str(self.ss[-2]) + ')')
+        self.PB.append('(:= ,' + str(self.ss[-1]) + ',' + '   ' + ',' + str(self.ss[-2]) + ')')
         self.ss.pop(-1)
         self.ss.pop(-1)
         self.LL1_stack.pop(0)
@@ -145,7 +146,7 @@ class LL1_parser_codegenerator():
 
     #This function LL1Parse the input and generates 3 address code and also prints them
     def parse(self):
-        self.LL1_stack.append('A')
+        self.LL1_stack.append('S')
         self.LL1_stack.append('$')
 
         self.terminal_string_generator()
@@ -194,10 +195,10 @@ class LL1_parser_codegenerator():
 
 
             else:
-                print(self.LL1_stack)
-                print(self.processed_input)
                 print("Error!")
-                #break
+                print("LL1 stack = ", self.LL1_stack)
+                print("input = ", self.processed_input)
+                break
             
             #this prints the LL1 parse
             # print(self.LL1_stack, '\t', self.processed_input)
@@ -214,18 +215,23 @@ class Activate():
         self.grammer_dic = {}
         self.input_str = ''
 
-    def grammer(self):
-        grammer_file_address = input('Please enter your grammer file address: ')
-        with open(grammer_file_address, 'r') as grammer_file:
-            grammer_read = grammer_file.read()
-            grammer_dic = eval(grammer_read)
-            self.grammer_dic = grammer_dic
+    def grammer(self, grammer_file_address):
+        try:
+            with open(grammer_file_address, 'r') as grammer_file:
+                grammer_read = grammer_file.read()
+                grammer_dic = eval(grammer_read)
+                self.grammer_dic = grammer_dic
+        except IOError:
+            print("File does not exist!")
 
     def input_string(self):
         input_file_address = input('Please enter your input file address: ')
-        with open(input_file_address, 'r') as input_file:
-            input_string = input_file.read()
-            self.input_str = input_string
+        try:
+            with open(input_file_address, 'r') as input_file:
+                input_string = input_file.read()
+                self.input_str = input_string
+        except IOError:
+            print("File does not exist!")
 
     def LL1_parse(self):
         parse_code_object = LL1_parser_codegenerator(self.grammer_dic, self.input_str)
@@ -241,18 +247,27 @@ def menu():
     
     activator = Activate()
 
+    #default grammer
+    activator.grammer('grammers/ekhtiyari.txt')
+
     while True:
-        print("Choices: \n 1.Enter your grammer file address \n 2.Enter your input file address \n 3.LL1 parse \n 0.Exit")
-        choice = input('Your choice: ')
+        print(" 1.Enter your grammer file address \n 2.Enter your input file address \n 3.LL1 parse \n 0.Exit")
+        choice = input()
 
         if choice == '0':
             print("Khosh galdin!")
             break
         elif choice == '1':
-            activator.grammer()
+            grammer_file_address = input('Please enter your grammer file address: ')
+            activator.grammer(grammer_file_address)
         elif choice == '2':
             activator.input_string()
         elif choice == '3':
-            clear = lambda: os.system('cls')
-            clear()
-            activator.LL1_parse()
+            if activator.input_str != '':
+                clear = lambda: os.system('cls')
+                clear()
+                activator.LL1_parse()
+            else:
+                print("Enter the input file first!")
+        else:
+            print("Wrong Input!")

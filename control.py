@@ -149,13 +149,31 @@ class LL1_parser_codegenerator():
 
 
     #This function LL1Parse the input and generates 3 address code and also prints them
-    def parse(self):
+    def parse(self, showparse=1):
         self.LL1_stack.append('S')
         self.LL1_stack.append('$')
 
         self.terminal_string_generator()
 
         while self.processed_input != []:
+            
+            #prints the LL1 parse if the showparse flag is 1
+            if showparse == 1:
+                LL1_string = ''
+                input_string = ''
+
+                for i in self.LL1_stack:
+                    LL1_string += i
+                    LL1_string += ' '
+                for j in self.processed_input:
+                    input_string += j
+                    input_string += ' '
+
+                print("LL1_stack : ", LL1_string)
+                print("input_stack : ", input_string)
+                print("\n")
+
+
             if self.LL1_stack[0] == self.processed_input[0]:
                 self.match()
             elif self.LL1_stack[0] == '@pid':
@@ -194,24 +212,24 @@ class LL1_parser_codegenerator():
 
                 for k in temp_list:
                     self.LL1_stack.append(k)
+
             #not needed
             # elif self.processed_input[0] in self.allowed_ligicaloperators:
-
 
             else:
                 print("Error!")
                 print("LL1 stack = ", self.LL1_stack)
                 print("input = ", self.processed_input)
                 break
-            
-            #this prints the LL1 parse
-            # print(self.LL1_stack, '\t', self.processed_input)
+
+    def generate_code(self):
         #this prints the 3 address code
+        self.parse(0)
         for i in self.PB:
             print(i)
+        print("variable_adress : ", self.variable_address)
         print('\n\n\n')
 
-            
 
 #The purpose of this class is to get grammer and input then toggle the LL1_parser_codegenerator class
 class Activate():
@@ -243,7 +261,7 @@ class Activate():
 
     def code_generate(self):
         parse_code_object = LL1_parser_codegenerator(self.grammer_dic, self.input_str)
-        parse_code_object.generate()
+        parse_code_object.generate_code()
 
 
 def menu():
@@ -253,9 +271,10 @@ def menu():
 
     #default grammer
     activator.grammer('grammers/ekhtiyari.txt')
+    clear = lambda: os.system('cls')
 
     while True:
-        print(" 1.Enter your grammer file address (optional) \n 2.Enter your input file address (mandatory) \n 3.LL1 parse \n 0.Exit")
+        print(" 1.Enter your grammer file address (optional) \n 2.Enter your input file address (mandatory) \n 3.LL1 parse \n 4.generate code \n 0.Exit")
         choice = input()
 
         if choice == '0':
@@ -268,10 +287,16 @@ def menu():
             activator.input_string()
         elif choice == '3':
             if activator.input_str != '':
-                clear = lambda: os.system('cls')
                 clear()
                 activator.LL1_parse()
             else:
                 print("Enter the input file first!")
+        elif choice == '4':
+            if activator.input_str != '':
+                clear()
+                activator.code_generate()
+            else:
+                print("Enter the input file first!")
+
         else:
             print("Wrong Input!")
